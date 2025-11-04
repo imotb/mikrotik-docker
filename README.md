@@ -17,6 +17,8 @@ This project helps you easily deploy Docker containers on MikroTik devices using
 - Port forwarding techniques
 - Support for both default and custom registries
 
+<img width="991" height="602" alt="Image" src="https://github.com/user-attachments/assets/64d12d54-569f-41e6-bf39-80f3aa9ca1cb" />
+
 ---
 
 ## 🛠️ Prerequisites
@@ -77,6 +79,9 @@ Just update the registry URL in your MikroTik configuration accordingly.
 ---
 
 ## 🔧 How It Works
+
+<img width="727" height="348" alt="Image" src="https://github.com/user-attachments/assets/455883ab-06cc-4aea-a4eb-6e94f04ccc71" />
+
 
 1. Select your desired Docker image from the registry.
 2. Configure environment variables, ports, and volumes.
