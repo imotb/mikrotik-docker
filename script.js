@@ -227,6 +227,10 @@ function addMount() {
     mountsContainer.appendChild(mountDiv);
 }
 
+function escapeRouterOS(value) {
+    return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
 // --- CORE LOGIC: COMMAND GENERATION ---
 function generateCommands() {
     const get = id => document.getElementById(id).value.trim();
@@ -244,7 +248,8 @@ function generateCommands() {
 
     commands += `# 2. Network Setup\n`;
     commands += `/interface/bridge/add name=docker-bridge comment="Bridge for all containers"\n`;
-    commands += `/ip/address/add address=${get('bridgeGateway')}/${get('ipRange').split('/')[1]} interface=docker-bridge comment="Gateway for Bridge"\n`;
+    const subnetMask = get('ipRange').split('/')[1] || '24';
+    commands += `/ip/address/add address=${get('bridgeGateway')}/${subnetMask} interface=docker-bridge comment="Gateway for Bridge"\n`;
     commands += `/interface/veth/add name=${get('vethName')} address=${get('containerIp')} gateway=${get('containerGateway')} comment="${comment}"\n`;
     commands += `/interface/bridge/port add bridge=docker-bridge interface=${get('vethName')} comment="${comment}"\n\n`;
 
@@ -289,7 +294,7 @@ function generateCommands() {
             const key = env.querySelector('input:nth-child(1)').value;
             const value = env.querySelector('input:nth-child(2)').value;
             if (key && value) {
-                commands += `/container/envs/add name=${get('envlistName')} key="${key}" value="${value}"\n`;
+                commands += `/container/envs/add name=${get('envlistName')} key="${escapeRouterOS(key)}" value="${escapeRouterOS(value)}"\n`;
             }
         });
         commands += '\n';
@@ -301,8 +306,8 @@ function generateCommands() {
     containerAddParams.push(`name=${containerName}`);
     containerAddParams.push(`interface=${get('vethName')}`);
     containerAddParams.push(`root-dir=${get('rootDir')}`);
-    if (get('hostname')) containerAddParams.push(`hostname="${get('hostname')}"`); // Add hostname
-    if (get('cmd')) containerAddParams.push(`cmd="${get('cmd')}"`);             // Add cmd
+    if (get('hostname')) containerAddParams.push(`hostname="${get('hostname')}"`);
+    if (get('cmd')) containerAddParams.push(`cmd="${get('cmd')}"`);
     if (get('dns')) containerAddParams.push(`dns=${get('dns')}`);
     if (envVars.length > 0) containerAddParams.push(`envlist=${get('envlistName')}`);
     if (mountNames.length > 0) containerAddParams.push(`mounts=${mountNames.join(',')}`);
