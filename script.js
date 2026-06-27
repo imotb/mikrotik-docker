@@ -244,7 +244,7 @@ function generateCommands() {
     let commands = `# MikroTik Container Script for: ${containerName}\n\n`;
 
     commands += `# 1. Set Global Container Configuration\n`;
-    commands += `/container/config/set registry-url="${get('registryUrl')}" ram-high=${get('ramHigh')}\n\n`;
+    commands += `/container/config/set registry-url="${get('registryUrl')}" memory-high=${get('ramHigh')}\n\n`;
 
     commands += `# 2. Network Setup\n`;
     commands += `/interface/bridge/add name=docker-bridge comment="Bridge for all containers"\n`;
