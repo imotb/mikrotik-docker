@@ -2,7 +2,7 @@
  * MikroTik Container Generator - Stylesheet
  * Developed by https://github.com/imotb
  */
- 
+
 body {
     font-family: 'Vazirmatn', sans-serif;
 }
@@ -44,7 +44,347 @@ pre {
     gap: 0.5rem;
 }
 
-/* RTL support for toggles */
+[dir="rtl"] .header-toggles {
+    left: auto;
+    right: 1rem;
+}
+
+/* ============================================
+   MOTION TOKENS
+   ============================================ */
+:root {
+    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+    --ease-in-out:  cubic-bezier(0.65, 0, 0.35, 1);
+    --duration-fast:   150ms;
+    --duration-normal: 300ms;
+    --duration-slow:   500ms;
+}
+
+/* ============================================
+   REDUCED MOTION SAFE
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   TEXT EFFECTS — gradient heading with shimmer
+   ============================================ */
+.display-5.fw-bold {
+    background: linear-gradient(135deg, var(--bs-primary), #7c4dff, var(--bs-primary));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+}
+
+/* Gentle floating icon in heading */
+.display-5 .bi-box-seam {
+    display: inline-block;
+    animation: floatIcon 3s var(--ease-out-expo) infinite;
+}
+
+@keyframes floatIcon {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+}
+
+/* Subtitle entrance */
+.lead.text-muted {
+    animation: fadeUp var(--duration-slow) var(--ease-out-expo) 0.2s both;
+}
+
+/* ============================================
+   BUTTON MICROINTERACTIONS
+   ============================================ */
+.btn {
+    transition:
+        transform var(--duration-fast) var(--ease-out-expo),
+        box-shadow var(--duration-fast) var(--ease-out-expo),
+        background-color var(--duration-fast) var(--ease-in-out),
+        border-color var(--duration-fast) var(--ease-in-out);
+    will-change: transform;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* Header toggle buttons — scale instead of lift */
+.header-toggles .btn {
+    transition:
+        transform var(--duration-fast) var(--ease-out-expo),
+        background-color var(--duration-fast) var(--ease-in-out),
+        box-shadow var(--duration-fast) var(--ease-out-expo);
+}
+
+.header-toggles .btn:hover {
+    transform: scale(1.1);
+}
+
+/* Green "Add" buttons */
+.btn-outline-success {
+    transition:
+        transform var(--duration-fast) var(--ease-out-expo),
+        box-shadow var(--duration-fast) var(--ease-out-expo),
+        background-color var(--duration-fast) var(--ease-in-out),
+        border-color var(--duration-fast) var(--ease-in-out),
+        color var(--duration-fast) var(--ease-in-out);
+}
+
+.btn-outline-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(25, 135, 84, 0.2);
+}
+
+/* ============================================
+   CARD ELEVATION
+   ============================================ */
+.card {
+    transition:
+        transform var(--duration-normal) var(--ease-out-expo),
+        box-shadow var(--duration-normal) var(--ease-out-expo);
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================
+   FORM CONTROL ENHANCEMENTS
+   ============================================ */
+.form-control,
+.form-select {
+    transition:
+        border-color var(--duration-fast) var(--ease-in-out),
+        box-shadow var(--duration-fast) var(--ease-in-out),
+        transform var(--duration-fast) var(--ease-out-expo);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+    transform: translateY(-1px);
+}
+
+.form-control:hover:not(:focus):not(:disabled):not(:read-only),
+.form-select:hover:not(:focus):not(:disabled) {
+    border-color: rgba(var(--bs-primary-rgb), 0.35);
+}
+
+/* ============================================
+   LEGEND ANIMATED UNDERLINE
+   ============================================ */
+legend.h5 {
+    position: relative;
+    float: none;
+    width: fit-content;
+    max-width: 100%;
+}
+
+legend.h5::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--bs-primary), #7c4dff);
+    transition: width var(--duration-normal) var(--ease-out-expo);
+    border-radius: 1px;
+}
+
+legend.h5:hover::after {
+    width: 100%;
+}
+
+[dir="rtl"] legend.h5::after {
+    left: auto;
+    right: 0;
+}
+
+/* ============================================
+   DYNAMIC ROW ENTRANCE
+   ============================================ */
+.port-rule,
+.env-var,
+.mount-rule {
+    animation: rowEnter var(--duration-normal) var(--ease-out-expo);
+}
+
+@keyframes rowEnter {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Row delete button */
+.port-rule .btn-danger,
+.env-var .btn-danger,
+.mount-rule .btn-danger {
+    transition:
+        transform var(--duration-fast) var(--ease-out-expo),
+        background-color var(--duration-fast) var(--ease-in-out),
+        box-shadow var(--duration-fast) var(--ease-out-expo);
+}
+
+.port-rule .btn-danger:hover,
+.env-var .btn-danger:hover,
+.mount-rule .btn-danger:hover {
+    transform: scale(1.12);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+/* ============================================
+   OUTPUT / TERMINAL EFFECTS
+   ============================================ */
+pre {
+    transition:
+        border-color var(--duration-normal) var(--ease-in-out),
+        box-shadow var(--duration-normal) var(--ease-in-out);
+    position: relative;
+}
+
+/* Terminal accent line — visible only when content is populated */
+pre::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--bs-primary), #7c4dff);
+    border-radius: 0.375rem 0 0 0.375rem;
+    opacity: 0;
+    transition: opacity var(--duration-normal) var(--ease-in-out);
+}
+
+pre:not(:has(code[data-empty]))::before {
+    opacity: 0.6;
+}
+
+[dir="rtl"] pre::before {
+    left: auto;
+    right: 0;
+    border-radius: 0 0.375rem 0.375rem 0;
+}
+
+/* ============================================
+   STAGGERED FORM ENTRANCE
+   ============================================ */
+#containerForm > fieldset {
+    opacity: 0;
+    animation: fadeUp var(--duration-slow) var(--ease-out-expo) forwards;
+}
+
+#containerForm > fieldset:nth-child(1) { animation-delay: 0.05s; }
+#containerForm > fieldset:nth-child(2) { animation-delay: 0.10s; }
+#containerForm > fieldset:nth-child(3) { animation-delay: 0.15s; }
+#containerForm > fieldset:nth-child(4) { animation-delay: 0.20s; }
+#containerForm > fieldset:nth-child(5) { animation-delay: 0.25s; }
+#containerForm > fieldset:nth-child(6) { animation-delay: 0.30s; }
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Output card entrance — slightly delayed */
+.col-lg-5 .card {
+    animation: fadeUp var(--duration-slow) var(--ease-out-expo) 0.35s both;
+}
+
+/* ============================================
+   RIPPLE EFFECT
+   ============================================ */
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    width: 100px;
+    height: 100px;
+    margin-top: -50px;
+    margin-left: -50px;
+    top: 50%;
+    left: 50%;
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ripple:active::after {
+    animation: rippleAnim 0.6s var(--ease-out-expo);
+}
+
+@keyframes rippleAnim {
+    from {
+        transform: scale(0);
+        opacity: 0.4;
+    }
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   COPY SUCCESS PULSE
+   ============================================ */
+.copy-success {
+    animation: copyPulse 0.4s var(--ease-out-expo);
+}
+
+@keyframes copyPulse {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+/* ============================================
+   RTL — accent line flip
+   ============================================ */
 [dir="rtl"] .header-toggles {
     left: auto;
     right: 1rem;
