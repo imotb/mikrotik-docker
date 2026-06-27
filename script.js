@@ -12,7 +12,7 @@ const translations = {
     en: {
         pageTitle: "MikroTik Container Generator",
         headerTitle: "MikroTik Container Generator",
-        headerSubtitle: "Easily create the necessary scripts to run containers on RouterOS 7.",
+        headerSubtitle: "Easily create the necessary scripts to run containers on RouterOS 7.22.1+.",
         globalSettingsTitle: "Global Settings",
         registryUrlLabel: "Registry URL",
         ramHighLabel: "Overall RAM Limit",
@@ -38,7 +38,7 @@ const translations = {
         dnsLabel: "Container DNS Server",
         mountsTitle: "Mount Points",
         addMountButton: "Add Mount",
-        mountNamePlaceholder: "Mount Name",
+        mountNamePlaceholder: "Mount List Name (list=)",
         mountSrcPlaceholder: "Path on Router (Src)",
         mountDstPlaceholder: "Path in Container (Dst)",
         portForwardingTitle: "Port Forwarding",
@@ -58,7 +58,7 @@ const translations = {
     fa: {
         pageTitle: "تولیدکننده دستورات کانتینر میکروتیک",
         headerTitle: "MikroTik Container Generator",
-        headerSubtitle: "اسکریپت‌های مورد نیاز برای اجرای کانتینر در RouterOS 7 را به سادگی ایجاد کنید.",
+        headerSubtitle: "اسکریپت‌های مورد نیاز برای اجرای کانتینر در RouterOS 7.22.1+ را به سادگی ایجاد کنید.",
         globalSettingsTitle: "تنظیمات سراسری",
         registryUrlLabel: "آدرس رجیستری",
         ramHighLabel: "حداکثر RAM کلی",
@@ -84,7 +84,7 @@ const translations = {
         dnsLabel: "سرور DNS کانتینر",
         mountsTitle: "Mount Points",
         addMountButton: "افزودن Mount",
-        mountNamePlaceholder: "نام Mount",
+        mountNamePlaceholder: "نام لیست Mount (list=)",
         mountSrcPlaceholder: "مسیر روی روتر (Src)",
         mountDstPlaceholder: "مسیر داخل کانتینر (Dst)",
         portForwardingTitle: "فوروارد کردن پورت",
@@ -152,6 +152,31 @@ langToggle.addEventListener('click', () => {
     generateCommands();
 });
 
+// --- RIPPLE EFFECT ---
+function addRipple(btn) {
+    if (!btn.classList.contains('ripple')) btn.classList.add('ripple');
+}
+
+function initRippleEffect(root) {
+    (root || document).querySelectorAll('.btn').forEach(addRipple);
+}
+
+// --- COPY SUCCESS ANIMATION ---
+function triggerCopySuccess(btn, span, icon) {
+    const originalText = span.textContent;
+    const originalIcon = icon.className;
+
+    span.textContent = translations[currentLang].copiedButton;
+    icon.className = 'bi bi-check-lg me-1';
+    btn.classList.add('copy-success');
+
+    setTimeout(() => {
+        span.textContent = originalText;
+        icon.className = originalIcon;
+        btn.classList.remove('copy-success');
+    }, 2000);
+}
+
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     if (!currentTheme) {
@@ -160,7 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setTheme(currentTheme);
 
     setLanguage(currentLang);
-    
+
+    initRippleEffect();
+
     document.querySelectorAll('input, select').forEach(element => {
         element.addEventListener('input', generateCommands);
     });
@@ -194,6 +221,7 @@ function addPortRule() {
         </select>
         <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove(); generateCommands();"><i class="bi bi-trash"></i></button>
     `;
+    addRipple(ruleDiv.querySelector('.btn-danger'));
     portRules.appendChild(ruleDiv);
 }
 
@@ -207,6 +235,7 @@ function addEnvVar() {
         <input type="text" class="form-control" placeholder="${langConfig.envValuePlaceholder}" value="Asia/Tehran" oninput="generateCommands()">
         <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove(); generateCommands();"><i class="bi bi-trash"></i></button>
     `;
+    addRipple(envDiv.querySelector('.btn-danger'));
     envVars.appendChild(envDiv);
 }
 
@@ -224,6 +253,7 @@ function addMount() {
         <input type="text" class="form-control" placeholder="${langConfig.mountDstPlaceholder}" value="/app/data" oninput="generateCommands()">
         <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove(); generateCommands();"><i class="bi bi-trash"></i></button>
     `;
+    addRipple(mountDiv.querySelector('.btn-danger'));
     mountsContainer.appendChild(mountDiv);
 }
 
@@ -235,13 +265,15 @@ function escapeRouterOS(value) {
 function generateCommands() {
     const get = id => document.getElementById(id).value.trim();
     if (!get('containerImage') || !get('containerName')) {
-        document.getElementById('commandOutput').textContent = translations[currentLang].outputPlaceholder;
+        const outputEl = document.getElementById('commandOutput');
+        outputEl.textContent = translations[currentLang].outputPlaceholder;
+        outputEl.setAttribute('data-empty', '');
         return;
     }
     
     const containerName = get('containerName');
     const comment = `For container: ${containerName}`;
-    let commands = `# MikroTik Container Script for: ${containerName}\n\n`;
+    let commands = `# MikroTik Container Script for: ${containerName}\n# Generated for RouterOS 7.22.1+ (mountlists syntax)\n\n`;
 
     commands += `# 1. Set Global Container Configuration\n`;
     commands += `/container/config/set registry-url="${get('registryUrl')}" memory-high=${get('ramHigh')}\n\n`;
@@ -280,7 +312,7 @@ function generateCommands() {
             const src = mount.querySelector('input:nth-child(2)').value;
             const dst = mount.querySelector('input:nth-child(3)').value;
             if (name && src && dst) {
-                commands += `/container/mounts/add name=${name} src=${src} dst=${dst}\n`;
+                commands += `/container/mounts/add list=${name} src=${src} dst=${dst}\n`;
                 mountNames.push(name);
             }
         });
@@ -310,7 +342,7 @@ function generateCommands() {
     if (get('cmd')) containerAddParams.push(`cmd="${get('cmd')}"`);
     if (get('dns')) containerAddParams.push(`dns=${get('dns')}`);
     if (envVars.length > 0) containerAddParams.push(`envlist=${get('envlistName')}`);
-    if (mountNames.length > 0) containerAddParams.push(`mounts=${mountNames.join(',')}`);
+    if (mountNames.length > 0) containerAddParams.push(`mountlists=${mountNames.join(',')}`);
     containerAddParams.push(`logging=yes`);
     containerAddParams.push(`start-on-boot=yes`);
     containerAddParams.push(`comment="${comment}"`);
@@ -319,15 +351,17 @@ function generateCommands() {
     commands += `# 7. Start the Container\n`;
     commands += `/container start [find where name="${containerName}"]\n`;
 
-    document.getElementById('commandOutput').textContent = commands;
+    const outputEl = document.getElementById('commandOutput');
+    outputEl.textContent = commands;
+    outputEl.removeAttribute('data-empty');
 }
 
 function copyCommands() {
     const commands = document.getElementById('commandOutput').textContent;
-    const copyButtonSpan = document.querySelector('button[onclick="copyCommands()"] span');
+    const copyButton = document.querySelector('button[onclick="copyCommands()"]');
+    const copyButtonSpan = copyButton.querySelector('span');
+    const copyIcon = copyButton.querySelector('i');
     navigator.clipboard.writeText(commands).then(() => {
-        const originalText = copyButtonSpan.textContent;
-        copyButtonSpan.textContent = translations[currentLang].copiedButton;
-        setTimeout(() => { copyButtonSpan.textContent = originalText; }, 2000);
+        triggerCopySuccess(copyButton, copyButtonSpan, copyIcon);
     });
 }
